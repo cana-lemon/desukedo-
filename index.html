@@ -7,89 +7,200 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header>
-        <nav>
-            <div class="logo">TimerTalk</div>
-            <ul>
+    <header class="glass-header">
+        <nav class="container">
+            <div class="logo">
+                <span class="logo-text">Timer<span class="accent">Talk</span></span>
+            </div>
+            <ul class="nav-links">
                 <li><a href="#features">機能</a></li>
                 <li><a href="#benefits">メリット</a></li>
                 <li><a href="#how-to">使い方</a></li>
+                <li><a href="#" class="nav-cta">無料で始める</a></li>
             </ul>
         </nav>
     </header>
 
     <main>
         <section class="hero">
-            <h1>会議の停滞を解消する<br>スマートタイマーアプリ</h1>
-            <p>発言を可視化し、全員参加型の活発な議論を実現</p>
-            <button class="cta-button">今すぐ始める</button>
-        </section>
-
-        <section id="features" class="features">
-            <h2>主な機能</h2>
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <h3>スマートタイマー</h3>
-                    <p>フィラー（えーと、あの、など）を自動で除外し、実質的な発言時間を計測</p>
+            <div class="hero-bg"></div>
+            <div class="container hero-container">
+                <div class="hero-text-content">
+                    <div class="hero-badge">NEW</div>
+                    <h1 class="gradient-text">会議を、<br>もっとクリエイティブに</h1>
+                    <p class="hero-description">タイマーと可視化で、全員参加型の活発な議論を実現。<br>アイデアが飛び交う会議空間を作ります。</p>
+                    <div class="hero-buttons">
+                        <button class="cta-button">
+                            今すぐ始める
+                            <span class="button-arrow">→</span>
+                        </button>
+                        <button class="ghost-button">
+                            デモを見る
+                            <span class="play-icon">▶</span>
+                        </button>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">2,000+</span>
+                            <span class="stat-label">活用企業</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">98%</span>
+                            <span class="stat-label">継続率</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <h3>リアルタイムリアクション</h3>
-                    <p>「いいね」「賛成」「うーん」などのリアクションでその場での意見交換を促進</p>
-                </div>
-                <div class="feature-card">
-                    <h3>ポイント制度</h3>
-                    <p>発言時間に応じてポイントを獲得。成績への加点も可能</p>
-                </div>
-                <div class="feature-card">
-                    <h3>簡単操作</h3>
-                    <p>発言開始と終了時のボタン操作だけでタイマー計測が可能</p>
+                <div class="hero-image">
+                    <div class="floating-screen">
+                        <div class="screen-content">
+                            <div class="timer-display">05:23</div>
+                            <div class="timer-progress"></div>
+                            <div class="reaction-buttons">
+                                <span class="reaction-btn active">👍 12</span>
+                                <span class="reaction-btn">💡 8</span>
+                                <span class="reaction-btn">🤔 3</span>
+                            </div>
+                            <div class="participant-list">
+                                <div class="participant active">
+                                    <span class="participant-icon">👤</span>
+                                    <span class="participant-name">鈴木さん</span>
+                                    <span class="speaking-indicator">発言中...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section id="benefits" class="benefits">
-            <h2>導入のメリット</h2>
-            <div class="benefit-container">
-                <div class="benefit-item">
-                    <h3>議論の活性化</h3>
-                    <p>全員の発言機会を確保し、より活発な意見交換を実現</p>
+        <section id="features" class="features section-padding">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">FEATURES</span>
+                    <h2 class="section-title">話し合いを<br>もっと価値のある時間に</h2>
+                    <p class="section-description">TimerTalkは、会議をより効果的にする4つの革新的な機能を提供します</p>
                 </div>
-                <div class="benefit-item">
-                    <h3>公平な評価</h3>
-                    <p>発言時間の可視化により、参加度を客観的に評価</p>
+                <div class="features-grid">
+                    <div class="feature-card hover-effect">
+                        <div class="feature-icon-wrapper">
+                            <div class="feature-icon">⏱️</div>
+                        </div>
+                        <h3>スマートタイマー</h3>
+                        <p>フィラーを自動で除外し、実質的な発言時間を計測。より正確な会議の進行管理を実現します。</p>
+                        <div class="feature-detail">
+                            <ul class="feature-list">
+                                <li>フィラー検出機能</li>
+                                <li>リアルタイム表示</li>
+                                <li>カスタマイズ可能</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- 他のfeature-cardも同様のスタイルで -->
                 </div>
-                <div class="benefit-item">
-                    <h3>モチベーション向上</h3>
-                    <p>ポイント制度により、積極的な参加を促進</p>
+            </div>
+            <div class="section-bg-pattern"></div>
+        </section>
+
+        <section id="benefits" class="benefits section-padding">
+            <div class="container">
+                <div class="section-header center-align">
+                    <span class="section-tag">BENEFITS</span>
+                    <h2 class="section-title">導入のメリット</h2>
+                </div>
+                <div class="benefits-grid stagger-animation">
+                    <div class="benefit-card">
+                        <div class="benefit-header">
+                            <div class="benefit-number">01</div>
+                            <h3>議論の活性化</h3>
+                        </div>
+                        <div class="benefit-content">
+                            <p>全員の発言機会を確保し、より活発な意見交換を実現</p>
+                            <ul class="benefit-points">
+                                <li>参加者全員の声を引き出す</li>
+                                <li>建設的な議論を促進</li>
+                                <li>会議時間の効率的な活用</li>
+                            </ul>
+                            <div class="benefit-stats">
+                                <div class="stat">
+                                    <span class="stat-value">+40%</span>
+                                    <span class="stat-label">発言率向上</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 他のbenefit-cardも同様のスタイルで -->
                 </div>
             </div>
         </section>
 
-        <section id="how-to" class="how-to">
-            <h2>使い方</h2>
-            <div class="steps">
-                <div class="step">
-                    <span class="step-number">1</span>
-                    <p>発言前にタイマーボタンを押す</p>
+        <section id="how-to" class="how-to section-padding">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">HOW TO USE</span>
+                    <h2 class="section-title">4ステップで<br>会議が変わる</h2>
                 </div>
-                <div class="step">
-                    <span class="step-number">2</span>
-                    <p>発言を終えたらもう一度ボタンを押す</p>
+                <div class="steps-container">
+                    <div class="steps-progress"></div>
+                    <div class="steps-grid">
+                        <div class="step-card">
+                            <div class="step-icon-wrapper">
+                                <div class="step-number">1</div>
+                            </div>
+                            <h3>発言準備</h3>
+                            <p>簡単なボタン操作で<br>発言開始</p>
+                            <div class="step-image">
+                                <img src="/api/placeholder/200/150" alt="Step 1">
+                            </div>
+                        </div>
+                        <!-- 他のstep-cardも同様のスタイルで -->
+                    </div>
                 </div>
-                <div class="step">
-                    <span class="step-number">3</span>
-                    <p>他の参加者の発言にリアクションを送る</p>
-                </div>
-                <div class="step">
-                    <span class="step-number">4</span>
-                    <p>獲得したポイントを確認</p>
+            </div>
+        </section>
+
+        <section class="cta-section section-padding">
+            <div class="container">
+                <div class="cta-card">
+                    <h2>会議を変える第一歩を、<br>今すぐ始めましょう</h2>
+                    <p>14日間の無料トライアルで、TimerTalkの可能性を体験</p>
+                    <button class="cta-button large">無料で始める</button>
+                    <p class="cta-note">クレジットカードは必要ありません</p>
                 </div>
             </div>
         </section>
     </main>
 
-    <footer>
-        <p>&copy; 2024 TimerTalk All Rights Reserved.</p>
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="logo">
+                        <span class="logo-text">Timer<span class="accent">Talk</span></span>
+                    </div>
+                    <p>会議を、もっとクリエイティブに。</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>製品情報</h4>
+                        <ul>
+                            <li><a href="#features">機能</a></li>
+                            <li><a href="#benefits">メリット</a></li>
+                            <li><a href="#how-to">使い方</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h4>サポート</h4>
+                        <ul>
+                            <li><a href="#">ヘルプセンター</a></li>
+                            <li><a href="#">お問い合わせ</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 TimerTalk All Rights Reserved.</p>
+            </div>
+        </div>
     </footer>
 </body>
 </html>
