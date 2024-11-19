@@ -3,107 +3,339 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TimerTalk - 会議を活性化させるタイマーアプリ</title>
-    <link rel="stylesheet" href="styles.css"> <!-- 外部CSSファイルのリンク -->
+    <title>タイムトークアシスト - 会議活性化アプリ</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --gradient: linear-gradient(135deg, #6366f1, #ec4899);
+            --spacing-base: clamp(1rem, 2vw, 2rem);
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8fafc;
+            color: #1e293b;
+            line-height: 1.8;
+        }
+
+        .header {
+            background: var(--gradient);
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-base);
+            position: relative;
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('/api/placeholder/1200/400') center/cover;
+            opacity: 0.1;
+            z-index: 0;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 800px;
+            padding: var(--spacing-base);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .team-label {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            display: inline-block;
+            backdrop-filter: blur(4px);
+            margin-bottom: 2rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .main-title {
+            font-size: clamp(2.5rem, 5vw, 4.5rem);
+            margin: 1rem 0;
+            font-weight: 800;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: clamp(1.2rem, 2vw, 1.6rem);
+            opacity: 0.95;
+            max-width: 600px;
+            margin: 2rem auto;
+            font-weight: 500;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: -6rem auto 0;
+            padding: 0 var(--spacing-base);
+            position: relative;
+        }
+
+        .section {
+            margin: 6rem auto;
+            padding: calc(var(--spacing-base) * 2);
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: clamp(1.8rem, 3vw, 2.5rem);
+            margin-bottom: 3rem;
+            color: #1e293b;
+            position: relative;
+            padding-left: 1.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background: var(--gradient);
+            border-radius: 3px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .feature-item {
+            padding: 2.5rem;
+            background: #f8fafc;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .feature-item:hover {
+            background: white;
+            box-shadow: 0 15px 30px -10px rgba(0,0,0,0.1);
+            border-color: var(--primary);
+            transform: translateY(-5px);
+        }
+
+        .feature-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .feature-title::before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: var(--gradient);
+            border-radius: 50%;
+        }
+
+        .manga-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 3rem;
+            margin: 3rem 0;
+        }
+
+        .manga-panel {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .manga-panel:hover {
+            transform: scale(1.03);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .manga-panel img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 20px;
+        }
+
+        .steps {
+            list-style: none;
+            padding: 0;
+            counter-reset: step;
+            display: grid;
+            gap: 2rem;
+        }
+
+        .steps li {
+            padding: 2rem;
+            background: #f8fafc;
+            border-radius: 20px;
+            position: relative;
+            padding-left: 5rem;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+        }
+
+        .steps li:hover {
+            background: white;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            transform: translateX(10px);
+        }
+
+        .steps li::before {
+            counter-increment: step;
+            content: counter(step);
+            position: absolute;
+            left: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 2.5rem;
+            height: 2.5rem;
+            background: var(--gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(2deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        .floating-image {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                min-height: 60vh;
+            }
+            
+            .container {
+                margin-top: -4rem;
+            }
+
+            .section {
+                padding: var(--spacing-base);
+                margin: 4rem auto;
+            }
+
+            .feature-item {
+                padding: 1.5rem;
+            }
+
+            .steps li {
+                padding: 1.5rem 1.5rem 1.5rem 4rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <header class="glass-header">
-        <nav class="container">
-            <div class="logo">
-                <span class="logo-text">Timer<span class="accent">Talk</span></span>
-            </div>
-            <ul class="nav-links">
-                <li><a href="#features">機能</a></li>
-                <li><a href="#benefits">メリット</a></li>
-                <li><a href="#how-to">使い方</a></li>
-                <li><a href="#" class="nav-cta">無料で始める</a></li>
-            </ul>
-        </nav>
+    <header class="header">
+        <div class="header-content">
+            <div class="team-label">チーム35</div>
+            <h1 class="main-title">タイムトークアシスト</h1>
+            <p class="subtitle">会議を楽しく、アイデアを活発に。新しい会議体験を。</p>
+        </div>
     </header>
 
-    <main>
-        <section class="hero">
-            <div class="hero-bg"></div>
-            <div class="container hero-container">
-                <div class="hero-text-content">
-                    <div class="hero-badge">NEW</div>
-                    <h1 class="gradient-text">会議を、<br>もっとクリエイティブに</h1>
-                    <p class="hero-description">タイマーと可視化で、全員参加型の活発な議論を実現。<br>アイデアが飛び交う会議空間を作ります。</p>
-                    <div class="hero-buttons">
-                        <button class="cta-button">
-                            今すぐ始める
-                            <span class="button-arrow">→</span>
-                        </button>
-                        <button class="ghost-button">
-                            デモを見る
-                            <span class="play-icon">▶</span>
-                        </button>
-                    </div>
-                    <div class="hero-stats">
-                        <div class="stat-item">
-                            <span class="stat-number">2,000+</span>
-                            <span class="stat-label">活用企業</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-number">98%</span>
-                            <span class="stat-label">継続率</span>
-                        </div>
-                    </div>
+    <div class="container">
+        <section class="section">
+            <h2 class="section-title">アプリ概要</h2>
+            <p>タイムトークアシストは、会議やグループワークをより活性化させる革新的なツールです。タイマーとゲーミフィケーションを組み合わせることで、参加者全員が積極的に発言できる環境を作り出します。</p>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">主な機能</h2>
+            <div class="features">
+                <div class="feature-item">
+                    <div class="feature-title">フィラー自動削除</div>
+                    <p>AIが「えー」「あの」などのフィラーを自動で検出・除外し、実質的な発言時間のみをカウント。より正確な参加度を測定します。</p>
                 </div>
-                <div class="hero-image">
-                    <div class="floating-screen">
-                        <div class="screen-content">
-                            <div class="timer-display">05:23</div>
-                            <div class="timer-progress"></div>
-                            <div class="reaction-buttons">
-                                <span class="reaction-btn active">👍 12</span>
-                                <span class="reaction-btn">💡 8</span>
-                                <span class="reaction-btn">🤔 3</span>
-                            </div>
-                            <div class="participant-list">
-                                <div class="participant active">
-                                    <span class="participant-icon">👤</span>
-                                    <span class="participant-name">鈴木さん</span>
-                                    <span class="speaking-indicator">発言中...</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="feature-item">
+                    <div class="feature-title">スマートタイマー</div>
+                    <p>ワンタッチで発言の開始/終了を記録。直感的な操作で、会議の流れを妨げることなくタイムキープが可能です。</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-title">リアルタイムリアクション</div>
+                    <p>簡単なジェスチャーで「いいね」「賛成」などのリアクションを送信。会話を自然に盛り上げます。</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-title">ゲーミフィケーション</div>
+                    <p>発言時間とリアクションに応じてポイントを獲得。達成感とモチベーション向上につながります。</p>
                 </div>
             </div>
         </section>
 
-        <!-- 他のセクション (features, benefits, etc.) は省略します -->
-    </main>
+        <section class="section">
+            <h2 class="section-title">使い方ガイド</h2>
+            <ul class="steps">
+                <li>アプリを起動し、新しい会議セッションを作成</li>
+                <li>参加者全員をセッションに招待</li>
+                <li>発言時はタイマーボタンで計測開始/終了</li>
+                <li>他の参加者の発言にリアクションで応答</li>
+            </ul>
+        </section>
 
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-brand">
-                    <div class="logo">
-                        <span class="logo-text">Timer<span class="accent">Talk</span></span>
-                    </div>
-                    <p>会議を、もっとクリエイティブに。</p>
+        <section class="section">
+            <h2 class="section-title">活用シーン</h2>
+            <div class="manga-grid">
+                <div class="manga-panel floating-image">
+                    <img src="/api/placeholder/400/300" alt="活用シーン1">
                 </div>
-                <div class="footer-links">
-                    <div class="footer-column">
-                        <h4>製品情報</h4>
-                        <ul>
-                            <li><a href="#features">機能</a></li>
-                            <li><a href="#benefits">メリット</a></li>
-                            <li><a href="#how-to">使い方</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-column">
-                        <h4>サポート</h4>
-                        <ul>
-                            <li><a href="#">ヘルプセンター</a></li>
-                            <li><a href="#">お問い合わせ</a></li>
-                        </ul>
-                    </div>
+                <div class="manga-panel floating-image">
+                    <img src="/api/placeholder/400/300" alt="活用シーン2">
+                </div>
+                <div class="manga-panel floating-image">
+                    <img src="/api/placeholder/400/300" alt="活用シーン3">
+                </div>
+                <div class="manga-panel floating-image">
+                    <img src="/api/placeholder/400/300" alt="活用シーン4">
                 </div>
             </div>
-        </div>
-    </footer>
+        </section>
+    </div>
 </body>
 </html>
