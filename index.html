@@ -10,7 +10,6 @@
             --primary-dark: #4f46e5;
             --secondary: #ec4899;
             --gradient: linear-gradient(135deg, #6366f1, #ec4899);
-            --spacing-base: clamp(1rem, 2vw, 2rem);
         }
 
         body {
@@ -19,18 +18,16 @@
             padding: 0;
             background-color: #f8fafc;
             color: #1e293b;
-            line-height: 1.8;
+            line-height: 1.6;
         }
 
         .header {
             background: var(--gradient);
-            min-height: 80vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: var(--spacing-base);
+            padding: 4rem 2rem;
+            text-align: center;
+            color: white;
             position: relative;
-            clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+            overflow: hidden;
         }
 
         .header::before {
@@ -48,71 +45,56 @@
         .header-content {
             position: relative;
             z-index: 1;
-            text-align: center;
-            max-width: 800px;
-            padding: var(--spacing-base);
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(8px);
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .team-label {
             background: rgba(255, 255, 255, 0.2);
-            padding: 0.75rem 1.5rem;
-            border-radius: 50px;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
             display: inline-block;
             backdrop-filter: blur(4px);
-            margin-bottom: 2rem;
-            font-weight: 600;
-            letter-spacing: 0.05em;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 1rem;
         }
 
         .main-title {
-            font-size: clamp(2.5rem, 5vw, 4.5rem);
+            font-size: 3.5rem;
             margin: 1rem 0;
             font-weight: 800;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-            letter-spacing: -0.02em;
         }
 
         .subtitle {
-            font-size: clamp(1.2rem, 2vw, 1.6rem);
-            opacity: 0.95;
+            font-size: 1.4rem;
+            opacity: 0.9;
             max-width: 600px;
-            margin: 2rem auto;
-            font-weight: 500;
+            margin: 0 auto;
         }
 
         .container {
             max-width: 1200px;
-            margin: -6rem auto 0;
-            padding: 0 var(--spacing-base);
-            position: relative;
+            margin: 0 auto;
+            padding: 0 2rem;
         }
 
         .section {
-            margin: 6rem auto;
-            padding: calc(var(--spacing-base) * 2);
+            margin: 4rem auto;
+            padding: 2rem;
             background: white;
-            border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            transition: transform 0.3s ease;
         }
 
         .section:hover {
             transform: translateY(-5px);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.1);
         }
 
         .section-title {
-            font-size: clamp(1.8rem, 3vw, 2.5rem);
-            margin-bottom: 3rem;
+            font-size: 2rem;
+            margin-bottom: 2rem;
             color: #1e293b;
             position: relative;
-            padding-left: 1.5rem;
-            letter-spacing: -0.01em;
+            padding-left: 1rem;
         }
 
         .section-title::before {
@@ -121,113 +103,103 @@
             left: 0;
             top: 0;
             bottom: 0;
-            width: 6px;
+            width: 4px;
             background: var(--gradient);
-            border-radius: 3px;
+            border-radius: 2px;
         }
 
         .features {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 2rem;
-            margin: 3rem 0;
+            margin: 2rem 0;
         }
 
         .feature-item {
-            padding: 2.5rem;
+            padding: 2rem;
             background: #f8fafc;
-            border-radius: 20px;
+            border-radius: 12px;
             transition: all 0.3s ease;
             border: 1px solid #e2e8f0;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
         }
 
         .feature-item:hover {
             background: white;
-            box-shadow: 0 15px 30px -10px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
             border-color: var(--primary);
-            transform: translateY(-5px);
         }
 
         .feature-title {
-            font-size: 1.4rem;
-            font-weight: 700;
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
             color: var(--primary-dark);
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.5rem;
         }
 
         .feature-title::before {
-            content: '';
-            width: 12px;
-            height: 12px;
-            background: var(--gradient);
-            border-radius: 50%;
+            content: '●';
+            color: var(--secondary);
+            font-size: 0.8rem;
         }
 
         .manga-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 3rem;
-            margin: 3rem 0;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
         }
 
         .manga-panel {
             position: relative;
-            border-radius: 20px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.3s ease;
         }
 
         .manga-panel:hover {
-            transform: scale(1.03);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            transform: scale(1.02);
         }
 
         .manga-panel img {
             width: 100%;
-            height: 300px;
+            height: 250px;
             object-fit: cover;
-            border-radius: 20px;
+            border-radius: 12px;
         }
 
         .steps {
             list-style: none;
             padding: 0;
             counter-reset: step;
-            display: grid;
-            gap: 2rem;
         }
 
         .steps li {
-            padding: 2rem;
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
             background: #f8fafc;
-            border-radius: 20px;
+            border-radius: 12px;
             position: relative;
-            padding-left: 5rem;
+            padding-left: 4rem;
             transition: all 0.3s ease;
-            font-size: 1.1rem;
         }
 
         .steps li:hover {
             background: white;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
-            transform: translateX(10px);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
 
         .steps li::before {
             counter-increment: step;
             content: counter(step);
             position: absolute;
-            left: 1.5rem;
+            left: 1rem;
             top: 50%;
             transform: translateY(-50%);
-            width: 2.5rem;
-            height: 2.5rem;
+            width: 2rem;
+            height: 2rem;
             background: var(--gradient);
             border-radius: 50%;
             display: flex;
@@ -235,39 +207,29 @@
             justify-content: center;
             color: white;
             font-weight: bold;
-            font-size: 1.2rem;
         }
 
         @keyframes float {
-            0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-15px) rotate(2deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
         }
 
         .floating-image {
-            animation: float 6s ease-in-out infinite;
+            animation: float 3s ease-in-out infinite;
         }
 
         @media (max-width: 768px) {
-            .header {
-                min-height: 60vh;
+            .main-title {
+                font-size: 2.5rem;
             }
             
-            .container {
-                margin-top: -4rem;
+            .subtitle {
+                font-size: 1.2rem;
             }
 
             .section {
-                padding: var(--spacing-base);
-                margin: 4rem auto;
-            }
-
-            .feature-item {
                 padding: 1.5rem;
-            }
-
-            .steps li {
-                padding: 1.5rem 1.5rem 1.5rem 4rem;
             }
         }
     </style>
