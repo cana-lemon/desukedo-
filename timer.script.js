@@ -14,30 +14,15 @@ const state = {
     reactions: new Map()
 };
 
-// ユーティリティ関数
-function formatTime(seconds) {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-}
+// stateオブジェクトの初期化
+const state = {
+    groups: new Map(),  // グループ情報
+    currentUser: null,  // 現在のユーザー
+    currentGroup: null, // 現在のグループ
+    participants: null  // 参加者
+};
 
-function showError(id, message) {
-    const errorDiv = document.getElementById(id);
-    errorDiv.textContent = message;
-    errorDiv.style.display = 'block';
-    setTimeout(() => {
-        errorDiv.style.display = 'none';
-    }, 3000);
-}
-
-function switchView(viewName) {
-    document.querySelectorAll('.view').forEach(view => {
-        view.classList.remove('active');
-    });
-    document.getElementById(`${viewName}View`).classList.add('active');
-}
-
-// グループ管理機能
+// グループ作成関数
 function createGroup() {
     const groupName = document.getElementById('createGroupName').value;
     const password = document.getElementById('createPassword').value;
@@ -58,21 +43,22 @@ function createGroup() {
         return;
     }
 
-    // グループ情報を作成
+    // 新しいグループを作成
     const newGroup = {
         password: password,
         participants: new Map(),
         createdAt: new Date()
     };
 
-    // ユーザー情報を設定
+    // ユーザー情報を設定（管理者として）
     state.currentUser = {
-        id: Date.now(),
+        id: Date.now(),  // ユーザーID（現時点では一意に生成）
         name: userName,
         isAdmin: true,
         groupName: groupName
     };
 
+    // グループを保存
     state.groups.set(groupName, newGroup);
     state.currentGroup = groupName;
     newGroup.participants.set(state.currentUser.id, state.currentUser);
@@ -81,6 +67,7 @@ function createGroup() {
     initializeMeeting();
 }
 
+// グループ参加関数
 function joinGroup() {
     const groupName = document.getElementById('joinGroupName').value;
     const password = document.getElementById('joinPassword').value;
@@ -97,13 +84,15 @@ function joinGroup() {
         return;
     }
 
+    // 参加者情報を設定
     state.currentUser = {
-        id: Date.now(),
+        id: Date.now(),  // ユーザーID（現時点では一意に生成）
         name: userName,
         isAdmin: false,
         groupName: groupName
     };
 
+    // 参加者リストに追加
     state.currentGroup = groupName;
     group.participants.set(state.currentUser.id, state.currentUser);
     state.participants = group.participants;
