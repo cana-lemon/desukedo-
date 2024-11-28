@@ -232,6 +232,31 @@
                 padding: 1.5rem;
             }
         }
+         .link-container {
+            margin-top: 100px;
+        }
+
+        .cute-link {
+            display: inline-block;
+            background-color: #ff7f7f; /* ピンク色 */
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            text-decoration: none;
+            border-radius: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .cute-link:hover {
+            background-color: #ff4d4d;
+            transform: scale(1.1);
+        }
+
+        .cute-link:active {
+            background-color: #e60000;
+            transform: scale(0.9);
+        }
     </style>
 </head>
 <body>
@@ -302,6 +327,9 @@
                 </div>
             </div>
         </section>
+        <div class="link-container">
+        <a href="別のページ.html" class="cute-link">アプリへ進む</a>
+        </div>
     </div>
 </body>
 </html>
