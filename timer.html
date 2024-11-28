@@ -14,38 +14,39 @@
                 <div class="card-header">
                     <h2>新規グループ作成</h2>
                 </div>
-                <div class="createError" id="error-message"></div>
+                <div class="error-message" id="createError"></div>
                 <div class="input-group">
-                    <label for="createGroupName">グループ名</label>
-                    <input type="text" id="createGroupName">
+                    <label>グループ名</label>
+                    <input type="text" id="createGroupName" class="input" placeholder="グループ名を入力">
                 </div>
                 <div class="input-group">
-                    <label for="createPassword">パスワード（4桁の数字）</label>
-                    <input type="password" id="createPassword" placeholder="4桁の数字" pattern="\d{4}" maxlength="4">
+                    <label>パスワード（4桁の数字）</label>
+                    <input type="password" id="createPassword" class="input" 
+                        placeholder="4桁の数字" pattern="\d{4}" maxlength="4">
                 </div>
                 <div class="input-group">
-                    <label for="createUserName">あなたの名前</label>
-                    <input type="text" id="createUserName" >
+                    <label>あなたの名前</label>
+                    <input type="text" id="createUserName" class="input" placeholder="名前を入力">
                 </div>
                 <button onclick="createGroup()" class="button">グループを作成</button>
             </div>
-
             <div class="card">
                 <div class="card-header">
                     <h2>グループに参加</h2>
                 </div>
-                <div id="joinError" class="error-message" ></div>
+                <div class="error-message" id="joinError"></div>
                 <div class="input-group">
-                    <label for="joinGroupName">グループ名</label>
-                    <input type="text" id="joinGroupName">
+                    <label>グループ名</label>
+                    <input type="text" id="joinGroupName" class="input" placeholder="グループ名を入力">
                 </div>
                 <div class="input-group">
-                    <label for="joinPassword">パスワード（4桁の数字）</label>
-                    <input type="password" id="joinPassword" placeholder="4桁の数字" pattern="\d{4}" maxlength="4">
+                    <label>パスワード（4桁の数字）</label>
+                    <input type="password" id="joinPassword" class="input" 
+                        placeholder="4桁の数字" pattern="\d{4}" maxlength="4">
                 </div>
                 <div class="input-group">
-                    <label for="joinUserName">あなたの名前</label>
-                    <input type="text" id="joinUserName" placeholder="名前を入力">
+                    <label>あなたの名前</label>
+                    <input type="text" id="joinUserName" class="input" placeholder="名前を入力">
                 </div>
                 <button onclick="joinGroup()" class="button">参加する</button>
             </div>
