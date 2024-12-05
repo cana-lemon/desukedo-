@@ -1,23 +1,3 @@
-// Firebase を使用したリアルタイム同期の拡張スクリプト
-import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, set, onValue, push, update, remove } from 'firebase/database';
-
-// Firebase の設定 (あなたの Firebase プロジェクトの設定に置き換えてください)
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    databaseURL: "YOUR_DATABASE_URL",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
-};
-
-// Firebase アプリの初期化
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
-
-// アプリケーションの状態管理
 const state = {
     groups: new Map(),
     currentGroup: null,
@@ -33,240 +13,213 @@ const state = {
     reactions: new Map()
 };
 
-// リアルタイム同期関数
-function syncGroupData(groupName) {
-    const groupRef = ref(database, 'groups/' + groupName);
-
-    // グループデータのリアルタイム監視
-    onValue(groupRef, (snapshot) => {
-        const groupData = snapshot.val();
-        if (groupData) {
-            // 参加者の同期
-            state.participants.clear();
-            Object.values(groupData.participants || {}).forEach(participant => {
-                state.participants.set(participant.id, participant);
+// ローカルストレージからグループ情報を読み込む
+function loadGroupsFromLocalStorage() {
+    const storedGroups = localStorage.getItem('meetingGroups');
+    if (storedGroups) {
+        const groupsData = JSON.parse(storedGroups);
+        groupsData.forEach(group => {
+            state.groups.set(group.name, {
+                name: group.name,
+                password: group.password,
+                participants: new Map(),
+                createdAt: new Date(group.createdAt)
             });
-
-            // タイマーの同期
-            if (groupData.timers) {
-                state.timers.total = groupData.timers.total || 0;
-                state.timers.individual.clear();
-                Object.entries(groupData.timers.individual || {}).forEach(([id, time]) => {
-                    state.timers.individual.set(id, time);
-                });
-            }
-
-            // 現在の話者の同期
-            state.currentSpeaker = groupData.currentSpeaker;
-
-            // リアクションの同期
-            state.reactions.clear();
-            Object.entries(groupData.reactions || {}).forEach(([participantId, reactions]) => {
-                state.reactions.set(participantId, reactions);
-            });
-
-            // UIの更新
-            updateTimerDisplays();
-            updateParticipantsList();
-        }
-    });
+        });
+    }
 }
 
-// グループ作成（Firebase版）
+// グループ情報をローカルストレージに保存
+function saveGroupsToLocalStorage() {
+    const groupsData = Array.from(state.groups.entries()).map(([name, group]) => ({
+        name: group.name,
+        password: group.password,
+        createdAt: group.createdAt
+    }));
+    localStorage.setItem('meetingGroups', JSON.stringify(groupsData));
+}
+
+// ユーティリティ関数
+function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+function showError(id, message) {
+    const errorDiv = document.getElementById(id);
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+    setTimeout(() => {
+        errorDiv.style.display = 'none';
+    }, 3000);
+}
+
+function switchView(viewName) {
+    document.querySelectorAll('.view').forEach(view => {
+        view.classList.remove('active');
+    });
+    document.getElementById(`${viewName}View`).classList.add('active');
+}
+
+// グループ作成
 function createGroup() {
     const groupName = document.getElementById('createGroupName').value;
     const password = document.getElementById('createPassword').value;
     const userName = document.getElementById('createUserName').value;
 
-    // 入力バリデーション（以前のコードと同様）
+    // 必要な項目が入力されているか確認
     if (!groupName || !password || !userName) {
         showError('createError', 'すべての項目を入力してください');
         return;
     }
 
+    // パスワードが4桁の数字か確認
     if (!/^\d{4}$/.test(password)) {
         showError('createError', 'パスワードは4桁の数字を入力してください');
         return;
     }
 
-    // ユーザー情報の作成
-    const userId = Date.now().toString();
-    const newUser = {
-        id: userId,
-        name: userName,
-        isAdmin: true,
-        joinedAt: new Date().toISOString()
-    };
+    // グループ名が既に使われているか確認
+    if (state.groups.has(groupName)) {
+        showError('createError', 'このグループ名は既に使用されています');
+        return;
+    }
 
-    // グループデータの作成
-    const groupData = {
+    // グループ情報を作成
+    const newGroup = {
         name: groupName,
         password: password,
-        createdAt: new Date().toISOString(),
-        participants: {},
-        timers: {
-            total: 0,
-            individual: {}
-        }
+        participants: new Map(),
+        createdAt: new Date()
     };
 
-    // 最初の参加者として追加
-    groupData.participants[userId] = newUser;
+    // ユーザー情報を設定
+    state.currentUser = {
+        id: Date.now(),
+        name: userName,
+        isAdmin: true,
+        groupName: groupName
+    };
 
-    // Firebaseにグループを保存
-    const groupRef = ref(database, 'groups/' + groupName);
-    set(groupRef, groupData)
-        .then(() => {
-            // ローカルステートの更新
-            state.currentUser = newUser;
-            state.currentGroup = groupName;
-            
-            // リアルタイム同期の開始
-            syncGroupData(groupName);
+    // グループを保存
+    state.groups.set(groupName, newGroup);
+    saveGroupsToLocalStorage(); // ローカルストレージに保存
 
-            // 会議画面への遷移
-            initializeMeeting();
-        })
-        .catch((error) => {
-            showError('createError', 'グループ作成に失敗しました: ' + error.message);
-        });
+    // 現在のグループを設定
+    state.currentGroup = groupName;
+    newGroup.participants.set(state.currentUser.id, state.currentUser);
+    state.participants = newGroup.participants;
+
+    // 会議の初期化
+    initializeMeeting();
 }
 
-// グループ参加（Firebase版）
+// グループ参加
 function joinGroup() {
+    // ローカルストレージからグループを再読み込み（念のため）
+    loadGroupsFromLocalStorage();
+
     const groupName = document.getElementById('joinGroupName').value;
     const password = document.getElementById('joinPassword').value;
     const userName = document.getElementById('joinUserName').value;
 
-    // 入力バリデーション
+    // 必要な入力項目がすべて入力されているか確認
     if (!groupName || !password || !userName) {
         showError('joinError', 'すべての項目を入力してください');
         return;
     }
 
-    const groupRef = ref(database, 'groups/' + groupName);
-    
-    // グループ情報の取得と検証
-    onValue(groupRef, (snapshot) => {
-        const groupData = snapshot.val();
-        
-        if (!groupData) {
-            showError('joinError', '指定されたグループは存在しません');
-            return;
-        }
+    // グループが存在するかチェック
+    const group = state.groups.get(groupName);
+    if (!group) {
+        showError('joinError', '指定されたグループは存在しません。グループ名を確認してください。');
+        return;
+    }
 
-        if (groupData.password !== password) {
-            showError('joinError', 'パスワードが間違っています');
-            return;
-        }
+    // パスワードが正しいかチェック
+    if (group.password !== password) {
+        showError('joinError', 'パスワードが間違っています');
+        return;
+    }
 
-        // ユーザー情報の作成
-        const userId = Date.now().toString();
-        const newUser = {
-            id: userId,
-            name: userName,
-            isAdmin: false,
-            joinedAt: new Date().toISOString()
-        };
+    // ユーザー情報を設定
+    state.currentUser = {
+        id: Date.now(),
+        name: userName,
+        isAdmin: false,
+        groupName: groupName
+    };
 
-        // 参加者の追加
-        const updatedParticipants = {
-            ...groupData.participants,
-            [userId]: newUser
-        };
+    // グループに参加者を追加
+    group.participants.set(state.currentUser.id, state.currentUser);
+    state.currentGroup = groupName;
+    state.participants = group.participants;
 
-        // グループデータの更新
-        update(groupRef, {
-            participants: updatedParticipants
-        }).then(() => {
-            // ローカルステートの更新
-            state.currentUser = newUser;
-            state.currentGroup = groupName;
-            
-            // リアルタイム同期の開始
-            syncGroupData(groupName);
+    // 会議室画面を初期化
+    initializeMeeting();
 
-            // 会議画面への遷移
-            initializeMeeting();
-        }).catch((error) => {
-            showError('joinError', '参加に失敗しました: ' + error.message);
-        });
-    }, {
-        onlyOnce: true
-    });
+    // 成功メッセージ
+    showError('joinError', 'グループに参加しました！');
 }
 
-// 発言開始/終了（Firebase同期版）
+// タイマー制御
 function toggleSpeaking() {
-    if (!state.currentGroup || !state.currentUser) return;
-
-    const groupRef = ref(database, 'groups/' + state.currentGroup);
+    const button = document.getElementById('speakButton');
     
     if (state.currentSpeaker === state.currentUser.id) {
         // 発言終了
-        update(groupRef, {
-            currentSpeaker: null
-        });
+        state.currentSpeaker = null;
+        button.textContent = '発言開始';
+        button.classList.remove('speaking');
         stopTimer();
     } else {
         // 発言開始
-        update(groupRef, {
-            currentSpeaker: state.currentUser.id
-        });
+        state.currentSpeaker = state.currentUser.id;
+        button.textContent = '発言終了';
+        button.classList.add('speaking');
         startTimer();
     }
+    
+    updateParticipantsList();
 }
 
-// タイマー開始（Firebase同期版）
 function startTimer() {
     if (state.timers.interval) return;
     
     state.timers.interval = setInterval(() => {
-        if (state.currentSpeaker && state.currentGroup) {
-            // ローカルタイマーの更新
+        if (state.currentSpeaker) {
             state.timers.total++;
-            const speakerTimer = (state.timers.individual.get(state.currentSpeaker) || 0) + 1;
-            state.timers.individual.set(state.currentSpeaker, speakerTimer);
-
-            // Firebase上のタイマーの更新
-            const groupRef = ref(database, 'groups/' + state.currentGroup);
-            update(groupRef, {
-                'timers/total': state.timers.total,
-                [`timers/individual/${state.currentSpeaker}`]: speakerTimer
-            });
-
+            const speakerTimer = state.timers.individual.get(state.currentSpeaker) || 0;
+            state.timers.individual.set(state.currentSpeaker, speakerTimer + 1);
             updateTimerDisplays();
         }
     }, 1000);
 }
 
-// リアクション追加（Firebase同期版）
-function addReaction(participantId, type) {
-    if (!state.currentGroup || !state.currentUser) return;
-
-    const groupRef = ref(database, 'groups/' + state.currentGroup);
-    const reactionRef = push(ref(database, `groups/${state.currentGroup}/reactions/${participantId}`));
-
-    set(reactionRef, {
-        type: type,
-        timestamp: new Date().toISOString(),
-        from: state.currentUser.id,
-        fromName: state.currentUser.name
-    });
-}
-
-// メモの更新（Firebase同期版）
-function updateNote(event) {
-    const noteContent = event.target.value;
-    if (state.currentGroup) {
-        const groupRef = ref(database, 'groups/' + state.currentGroup);
-        update(groupRef, {
-            sharedNote: noteContent
-        });
+function stopTimer() {
+    if (state.timers.interval) {
+        clearInterval(state.timers.interval);
+        state.timers.interval = null;
     }
 }
 
-// UIの更新関数（以前のコードをベースに）
+// リアクション機能
+function addReaction(participantId, type) {
+    if (!state.reactions.has(participantId)) {
+        state.reactions.set(participantId, []);
+    }
+    
+    state.reactions.get(participantId).push({
+        type: type,
+        timestamp: new Date(),
+        from: state.currentUser.id
+    });
+    
+    updateParticipantsList();
+}
+
+// UI更新機能
 function updateTimerDisplays() {
     document.getElementById('totalTimer').textContent = formatTime(state.timers.total);
     if (state.currentUser) {
@@ -279,13 +232,16 @@ function updateParticipantsList() {
     const grid = document.getElementById('participantsGrid');
     grid.innerHTML = '';
 
-    state.participants.forEach((participant, id) => {
+    const group = state.groups.get(state.currentGroup);
+    if (!group) return;
+
+    group.participants.forEach((participant, id) => {
         if (id !== state.currentUser.id) {
             const card = document.createElement('div');
             card.className = `participant-card ${id === state.currentSpeaker ? 'speaking' : ''}`;
             
             const time = state.timers.individual.get(id) || 0;
-            const reactions = Array.from(state.reactions.get(id) || []);
+            const reactions = state.reactions.get(id) || [];
             
             card.innerHTML = `
                 <div class="card-header">
@@ -315,189 +271,120 @@ function countReactions(participantId, type) {
     return reactions.filter(r => r.type === type).length;
 }
 
-// その他のユーティリティ関数（以前のコードから）
-function formatTime(seconds) {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+// ミーティング終了と統計
+function endMeeting() {
+    if (confirm('ミーティングを終了しますか？')) {
+        stopTimer();
+        generateStats();
+        switchView('stats');
+    }
 }
 
-function showError(id, message) {
-    const errorDiv = document.getElementById(id);
-    errorDiv.textContent = message;
-    errorDiv.style.display = 'block';
-    setTimeout(() => {
-        errorDiv.style.display = 'none';
-    }, 3000);
-}
+function generateStats() {
+    // 発言時間ランキング
+    const timeRanking = Array.from(state.timers.individual.entries())
+        .map(([id, time]) => ({
+            name: state.participants.get(id).name,
+            time: time
+        }))
+        .sort((a, b) => b.time - a.time);
 
-function switchView(viewName) {
-    document.querySelectorAll('.view').forEach(view => {
-        view.classList.remove('active');
+    // リアクションランキング
+    const reactionRankings = {
+        thumbsUp: [],
+        thumbsDown: [],
+        question: []
+    };
+
+    state.participants.forEach((participant, id) => {
+        const reactions = state.reactions.get(id) || [];
+        reactionRankings.thumbsUp.push({
+            name: participant.name,
+            count: reactions.filter(r => r.type === 'thumbsUp').length
+        });
+        reactionRankings.thumbsDown.push({
+            name: participant.name,
+            count: reactions.filter(r => r.type === 'thumbsDown').length
+        });
+        reactionRankings.question.push({
+            name: participant.name,
+            count: reactions.filter(r => r.type === 'question').length
+        });
     });
-    document.getElementById(`${viewName}View`).classList.add('active');
+
+    // ランキングの表示
+    document.getElementById('timeRanking').innerHTML = timeRanking
+        .map((item, index) => `
+            <div class="ranking-item">
+                <span>${index + 1}. ${item.name}</span>
+                <span>${formatTime(item.time)}</span>
+            </div>
+        `).join('');
+
+    ['thumbsUp', 'thumbsDown', 'question'].forEach(type => {
+        const ranking = reactionRankings[type]
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 3);
+        
+        document.getElementById(`${type}Ranking`).innerHTML = ranking
+            .map((item, index) => `
+                <div class="ranking-item">
+                    <span>${index + 1}. ${item.name}</span>
+                    <span>${item.count}回</span>
+                </div>
+            `).join('');
+    });
+
+    // メモの表示
+    document.getElementById('finalNote').textContent = 
+        state.notes.get(state.currentGroup) || 'メモはありません';
 }
 
-// 初期化とイベントリスナーの設定
+// メモ機能
+function updateNote(event) {
+    const noteContent = event.target.value;
+    state.notes.set(state.currentGroup, noteContent);
+}
+
+// 統計の保存
+function saveStats() {
+    const stats = {
+        groupName: state.currentGroup,
+        date: new Date().toISOString(),
+        totalTime: state.timers.total,
+        participants: Array.from(state.participants.values()),
+        individualTimes: Object.fromEntries(state.timers.individual),
+        reactions: Object.fromEntries(state.reactions),
+        note: state.notes.get(state.currentGroup)
+    };
+
+    const blob = new Blob([JSON.stringify(stats, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `meeting-stats-${state.currentGroup}-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+}
+
+function startNewMeeting() {
+    if (confirm('新しいミーティングを開始しますか？')) {
+        location.reload();
+    }
+}
+
+// 初期化
 function initializeMeeting() {
     switchView('meeting');
     updateTimerDisplays();
     updateParticipantsList();
     
     const noteArea = document.getElementById('sharedNote');
+    noteArea.value = state.notes.get(state.currentGroup) || '';
     noteArea.addEventListener('input', updateNote);
 }
 
-// イベントリスナーの追加
 document.addEventListener('DOMContentLoaded', () => {
-    // ボタンにイベントリスナーを追加
-    document.getElementById('createGroupBtn').addEventListener('click', createGroup);
-    document.getElementById('joinGroupBtn').addEventListener('click', joinGroup);
-    document.getElementById('speakButton').addEventListener('click', toggleSpeaking);
-    document.getElementById('endMeetingBtn').addEventListener('click', endMeeting);
-    
-    // 初期ビューの設定
+    // ローカルストレージからグループを読み込む
+    loadGroupsFromLocalStorage();
     switchView('login');
 });
-
-// その他の関数（generateStats, saveStats, startNewMeeting等）は以前のコードを基に実装
-
-
-// Modifications to existing timer.script.js
-
-// Add WebSocket connection for real-time synchronization
-let socket;
-
-function initializeWebSocket() {
-    // Replace with your WebSocket server URL
-    socket = new WebSocket('ws://your-websocket-server-url');
-
-    socket.onopen = function(e) {
-        console.log('WebSocket connection established');
-        // Send group join message
-        if (state.currentGroup && state.currentUser) {
-            socket.send(JSON.stringify({
-                type: 'joinGroup',
-                groupName: state.currentGroup,
-                userId: state.currentUser.id,
-                userName: state.currentUser.name
-            }));
-        }
-    };
-
-    socket.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-
-        switch(data.type) {
-            case 'timerUpdate':
-                handleTimerUpdate(data);
-                break;
-            case 'speakerUpdate':
-                handleSpeakerUpdate(data);
-                break;
-            case 'reactionUpdate':
-                handleReactionUpdate(data);
-                break;
-        }
-    };
-
-    socket.onerror = function(error) {
-        console.log('WebSocket Error: ', error);
-    };
-}
-
-function handleTimerUpdate(data) {
-    // Synchronize timer across all participants in the group
-    state.timers.total = data.totalTime;
-    state.timers.individual = new Map(Object.entries(data.individualTimes));
-    updateTimerDisplays();
-    updateParticipantsList();
-}
-
-function handleSpeakerUpdate(data) {
-    // Update current speaker status
-    state.currentSpeaker = data.speakerId;
-    const button = document.getElementById('speakButton');
-    
-    if (state.currentSpeaker) {
-        button.textContent = '発言終了';
-        button.classList.add('speaking');
-        startTimer();
-    } else {
-        button.textContent = '発言開始';
-        button.classList.remove('speaking');
-        stopTimer();
-    }
-    
-    updateParticipantsList();
-}
-
-function handleReactionUpdate(data) {
-    // Update reactions for a specific participant
-    state.reactions.set(data.participantId, data.reactions);
-    updateParticipantsList();
-}
-
-// Modify existing toggleSpeaking function
-function toggleSpeaking() {
-    const button = document.getElementById('speakButton');
-    
-    if (state.currentSpeaker === state.currentUser.id) {
-        // 発言終了
-        state.currentSpeaker = null;
-        button.textContent = '発言開始';
-        button.classList.remove('speaking');
-        stopTimer();
-
-        // Broadcast speaker update
-        if (socket) {
-            socket.send(JSON.stringify({
-                type: 'speakerUpdate',
-                groupName: state.currentGroup,
-                speakerId: null
-            }));
-        }
-    } else {
-        // 発言開始
-        state.currentSpeaker = state.currentUser.id;
-        button.textContent = '発言終了';
-        button.classList.add('speaking');
-        startTimer();
-
-        // Broadcast speaker update
-        if (socket) {
-            socket.send(JSON.stringify({
-                type: 'speakerUpdate',
-                groupName: state.currentGroup,
-                speakerId: state.currentSpeaker
-            }));
-        }
-    }
-    
-    updateParticipantsList();
-}
-
-// Modify startTimer to broadcast timer updates
-function startTimer() {
-    if (state.timers.interval) return;
-    
-    state.timers.interval = setInterval(() => {
-        if (state.currentSpeaker) {
-            state.timers.total++;
-            const speakerTimer = state.timers.individual.get(state.currentSpeaker) || 0;
-            state.timers.individual.set(state.currentSpeaker, speakerTimer + 1);
-            updateTimerDisplays();
-
-            // Broadcast timer update
-            if (socket) {
-                socket.send(JSON.stringify({
-                    type: 'timerUpdate',
-                    groupName: state.currentGroup,
-                    totalTime: state.timers.total,
-                    individualTimes: Object.fromEntries(state.timers.individual)
-                }));
-            }
-        }
-    }, 1000);
-}
-
