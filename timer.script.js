@@ -361,3 +361,278 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // その他の関数（generateStats, saveStats, startNewMeeting等）は以前のコードを基に実装
+
+
+// Modifications to existing timer.script.js
+
+// Add WebSocket connection for real-time synchronization
+let socket;
+
+function initializeWebSocket() {
+    // Replace with your WebSocket server URL
+    socket = new WebSocket('ws://your-websocket-server-url');
+
+    socket.onopen = function(e) {
+        console.log('WebSocket connection established');
+        // Send group join message
+        if (state.currentGroup && state.currentUser) {
+            socket.send(JSON.stringify({
+                type: 'joinGroup',
+                groupName: state.currentGroup,
+                userId: state.currentUser.id,
+                userName: state.currentUser.name
+            }));
+        }
+    };
+
+    socket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+
+        switch(data.type) {
+            case 'timerUpdate':
+                handleTimerUpdate(data);
+                break;
+            case 'speakerUpdate':
+                handleSpeakerUpdate(data);
+                break;
+            case 'reactionUpdate':
+                handleReactionUpdate(data);
+                break;
+        }
+    };
+
+    socket.onerror = function(error) {
+        console.log('WebSocket Error: ', error);
+    };
+}
+
+function handleTimerUpdate(data) {
+    // Synchronize timer across all participants in the group
+    state.timers.total = data.totalTime;
+    state.timers.individual = new Map(Object.entries(data.individualTimes));
+    updateTimerDisplays();
+    updateParticipantsList();
+}
+
+function handleSpeakerUpdate(data) {
+    // Update current speaker status
+    state.currentSpeaker = data.speakerId;
+    const button = document.getElementById('speakButton');
+    
+    if (state.currentSpeaker) {
+        button.textContent = '発言終了';
+        button.classList.add('speaking');
+        startTimer();
+    } else {
+        button.textContent = '発言開始';
+        button.classList.remove('speaking');
+        stopTimer();
+    }
+    
+    updateParticipantsList();
+}
+
+function handleReactionUpdate(data) {
+    // Update reactions for a specific participant
+    state.reactions.set(data.participantId, data.reactions);
+    updateParticipantsList();
+}
+
+// Modify existing toggleSpeaking function
+function toggleSpeaking() {
+    const button = document.getElementById('speakButton');
+    
+    if (state.currentSpeaker === state.currentUser.id) {
+        // 発言終了
+        state.currentSpeaker = null;
+        button.textContent = '発言開始';
+        button.classList.remove('speaking');
+        stopTimer();
+
+        // Broadcast speaker update
+        if (socket) {
+            socket.send(JSON.stringify({
+                type: 'speakerUpdate',
+                groupName: state.currentGroup,
+                speakerId: null
+            }));
+        }
+    } else {
+        // 発言開始
+        state.currentSpeaker = state.currentUser.id;
+        button.textContent = '発言終了';
+        button.classList.add('speaking');
+        startTimer();
+
+        // Broadcast speaker update
+        if (socket) {
+            socket.send(JSON.stringify({
+                type: 'speakerUpdate',
+                groupName: state.currentGroup,
+                speakerId: state.currentSpeaker
+            }));
+        }
+    }
+    
+    updateParticipantsList();
+}
+
+// Modify startTimer to broadcast timer updates
+function startTimer() {
+    if (state.timers.interval) return;
+    
+    state.timers.interval = setInterval(() => {
+        if (state.currentSpeaker) {
+            state.timers.total++;
+            const speakerTimer = state.timers.individual.get(state.currentSpeaker) || 0;
+            state.timers.individual.set(state.currentSpeaker, speakerTimer + 1);
+            updateTimerDisplays();
+
+            // Broadcast timer update
+            if (socket) {
+                socket.send(JSON.stringify({
+                    type: 'timerUpdate',
+                    groupName: state.currentGroup,
+                    totalTime: state.timers.total,
+                    individualTimes: Object.fromEntries(state.timers.individual)
+                }));
+            }
+        }
+    }, 1000);
+}
+
+// Modify addReaction to broadcast reactions
+function addReaction(participantId, type) {
+    if (!state.reactions.has(participantId)) {
+        state.reactions.set(participantId, []);
+    }
+    
+    const newReaction = {
+        type: type,
+        timestamp: new Date(),
+        from: state.currentUser.id
+    };
+    
+    state.reactions.get(participantId).push(newReaction);
+    
+    // Broadcast reaction update
+    if (socket) {
+        socket.send(JSON.stringify({
+            type: 'reactionUpdate',
+            groupName: state.currentGroup,
+            participantId: participantId,
+            reactions: state.reactions.get(participantId)
+        }));
+    }
+    
+    updateParticipantsList();
+}
+
+// Modify initializeMeeting to set up WebSocket
+function initializeMeeting() {
+    switchView('meeting');
+    updateTimerDisplays();
+    updateParticipantsList();
+    
+    const noteArea = document.getElementById('sharedNote');
+    noteArea.value = state.notes.get(state.currentGroup) || '';
+    noteArea.addEventListener('input', updateNote);
+
+    // Initialize WebSocket connection
+    initializeWebSocket();
+}
+
+// Modify existing code to clear timers when starting a new meeting
+function startNewMeeting() {
+    if (confirm('新しいミーティングを開始しますか？')) {
+        // Close WebSocket connection if it exists
+        if (socket) {
+            socket.close();
+        }
+        
+        // Reset state
+        state.timers = {
+            total: 0,
+            individual: new Map(),
+            interval: null
+        };
+        state.currentSpeaker = null;
+        state.reactions.clear();
+
+        location.reload();
+    }
+}
+
+// Additional helper function for enhanced reactions
+function getReactionEmoji(type) {
+    switch(type) {
+        case 'thumbsUp': return '👍';
+        case 'thumbsDown': return '👎';
+        case 'question': return '❓';
+        default: return '🤔';
+    }
+}
+
+// Modify updateParticipantsList to show detailed reactions
+function updateParticipantsList() {
+    const grid = document.getElementById('participantsGrid');
+    grid.innerHTML = '';
+
+    const group = state.groups.get(state.currentGroup);
+    if (!group) return;
+
+    group.participants.forEach((participant, id) => {
+        if (id !== state.currentUser.id) {
+            const card = document.createElement('div');
+            card.className = `participant-card ${id === state.currentSpeaker ? 'speaking' : ''}`;
+            
+            const time = state.timers.individual.get(id) || 0;
+            const reactions = state.reactions.get(id) || [];
+            
+            // Organize reactions by type
+            const reactionCounts = {
+                'thumbsUp': 0,
+                'thumbsDown': 0,
+                'question': 0
+            };
+            const reactionDetails = {};
+
+            reactions.forEach(reaction => {
+                if (!reactionDetails[reaction.type]) {
+                    reactionDetails[reaction.type] = [];
+                }
+                reactionDetails[reaction.type].push({
+                    from: group.participants.get(reaction.from)?.name || 'Unknown',
+                    timestamp: new Date(reaction.timestamp).toLocaleTimeString()
+                });
+                reactionCounts[reaction.type]++;
+            });
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <h3>${participant.name}</h3>
+                    <div class="timer-display">${formatTime(time)}</div>
+                </div>
+                <div class="reaction-buttons">
+                    ${Object.entries(reactionCounts).map(([type, count]) => `
+                        <button onclick="addReaction('${id}', '${type}')" class="reaction-button">
+                            ${getReactionEmoji(type)} <span class="reaction-count">${count}</span>
+                        </button>
+                    `).join('')}
+                </div>
+                ${Object.entries(reactionDetails).map(([type, details]) => details.length > 0 ? `
+                    <div class="reaction-details">
+                        <strong>${getReactionEmoji(type)} ${type} リアクション:</strong>
+                        <ul>
+                            ${details.map(detail => `
+                                <li>From: ${detail.from} (${detail.timestamp})</li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                ` : '').join('')}
+            `;
+            
+            grid.appendChild(card);
+        }
+    });
+}
