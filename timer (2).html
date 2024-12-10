@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talk Timer</title>
+    <link rel="stylesheet" href="timer.css">
+    <script src="timer.script.js" defer></script>
+</head>
+<body>
+    <div id="app-container">
+        <!-- 画面1: スタート画面 -->
+        <div id="start-screen" class="screen">
+            <h1>Talk Timer</h1>
+            <p>みんなで楽しく話し合いましょう！</p>
+            <button onclick="showScreen('group-screen')" class="primary-btn">スタート</button>
+        </div>
+
+        <!-- 画面2: グループ作成画面 -->
+        <div id="group-screen" class="screen hidden">
+            <h2>グループ作成</h2>
+            <div class="group-form">
+                <input type="text" id="group-name" placeholder="グループ名">
+                <div id="members-list">
+                    <input type="text" class="member-input" placeholder="メンバー名">
+                    <input type="text" class="member-input" placeholder="メンバー名">
+                </div>
+                <button onclick="addMemberInput()" class="secondary-btn">メンバーを追加</button>
+                <button onclick="createGroup()" class="primary-btn">グループ作成</button>
+            </div>
+        </div>
+
+        <!-- 画面3: 選択画面 -->
+        <div id="choice-screen" class="screen hidden">
+            <h2>グループ：<span id="current-group-name"></span></h2>
+            <div class="members-list">
+                <h3>参加メンバー</h3>
+                <div id="current-members-list"></div>
+            </div>
+            <div class="choice-buttons">
+                <button onclick="showScreen('timer-screen')" class="primary-btn">会議開始</button>
+                <button onclick="showScreen('chat-screen')" class="secondary-btn">チャット</button>
+            </div>
+            <div class="group-options">
+                <button onclick="resetGroup()" class="secondary-btn">新しいグループを作成</button>
+            </div>
+        </div>
+
+        <!-- 画面4: タイマー画面 -->
+        <div id="timer-screen" class="screen hidden">
+            <div class="main-timer">
+                <h2>全体タイマー</h2>
+                <div id="total-timer" class="timer-display">00:00</div>
+            </div>
+            
+            <div id="member-timers" class="member-timers-container">
+                <!-- メンバーのタイマーはJSで動的に追加 -->
+            </div>
+            
+            <div class="shared-memo">
+                <h3>共有メモ</h3>
+                <textarea id="shared-memo" placeholder="ここにメモを入力..."></textarea>
+            </div>
+            
+            <button onclick="endMeeting()" class="danger-btn">会議終了</button>
+        </div>
+
+        <!-- 画面5: チャット画面 -->
+        <div id="chat-screen" class="screen hidden">
+            <div class="chat-container">
+                <div id="chat-messages" class="messages"></div>
+                <div class="chat-input">
+                    <select id="chat-member-select" class="member-select">
+                        <option value="">発言者を選択</option>
+                    </select>
+                    <input type="text" id="message-input" placeholder="メッセージを入力...">
+                    <button onclick="sendMessage()" class="secondary-btn">送信</button>
+                </div>
+            </div>
+            <button onclick="showScreen('choice-screen')" class="secondary-btn">選択画面に戻る</button>
+        </div>
+
+        <!-- 画面6: 統計画面 -->
+        <div id="stats-screen" class="screen hidden">
+            <h2>会議統計</h2>
+            <div class="rankings">
+                <div class="speaking-time-ranking">
+                    <h3>発言時間ランキング</h3>
+                    <div id="time-ranking-list"></div>
+                </div>
+                <div class="reaction-details">
+                    <h3>リアクション詳細</h3>
+                    <div id="reaction-list">
+                        <h4>👍 いいね ランキング</h4>
+                        <div id="like-ranking-list"></div>
+                        <h4>🤔 うーん ランキング</h4>
+                        <div id="thinking-ranking-list"></div>
+                        <h4>❓ はてな ランキング</h4>
+                        <div id="question-ranking-list"></div>
+                    </div>
+                </div>
+                <div class="memo-review">
+                    <h3>共有メモ内容</h3>
+                    <div id="memo-content" class="memo-display"></div>
+                </div>
+            </div>
+            <button onclick="showScreen('choice-screen')" class="secondary-btn">選択画面に戻る</button>
+        </div>
+    </div>
+</body>
+</html>
