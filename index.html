@@ -154,7 +154,6 @@
 
         .manga-panel {
             position: relative;
-            border-radius: 12px;
             overflow: hidden;
             transition: transform 0.3s ease;
             height:800px;
@@ -165,12 +164,10 @@
         }
 
         .manga-panel img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 12px;
-        }
-
+    width: auto; /* 横幅は自動で調整 */
+    height: 100%; /* パネルの高さに合わせる */
+    object-fit: contain; /* 全体を表示させるためにcontainを指定 */
+}
 
         .steps {
             list-style: none;
