@@ -152,13 +152,12 @@
             margin: 2rem 0;
         }
 
-        .manga-panel {
+
+    .manga-panel {
     position: relative;
     overflow: hidden;
-    transition: transform 0.3s ease;
     height: 800px; /* 高さを固定 */
-}
-        
+}    
 
         .manga-panel:hover {
             transform: scale(1.02);
@@ -166,8 +165,10 @@
 
 .manga-panel img {
     width: 100%; /* 横幅を親要素に合わせる */
-    height: 800px; /* 高さを固定して揺れを防止 */
+    height: 100%; /* 親要素の高さに合わせる */
     object-fit: cover; /* 画像を親要素に収める */
+    display: block; /* 画像の下の隙間をなくす */
+    transition: none; /* 動きをなくす */
 }
         
         .steps {
