@@ -153,23 +153,24 @@
         }
 
         .manga-panel {
-            position: relative;
-            border-radius: 12px;
-            overflow: hidden;
-            transition: transform 0.3s ease;
-            height:800px;
-        }
+             position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+    max-height: 70vh; /* 画面の高さの70%まで */
+}
 
         .manga-panel:hover {
             transform: scale(1.02);
         }
 
         .manga-panel img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 12px;
-        }
+              width: 100%;
+    height: 100%;
+    object-fit: contain; /* 画像全体を表示 */
+    border-radius: 12px;
+    background: white; /* 余白部分の背景色 */
+}
 
         .steps {
             list-style: none;
